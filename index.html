@@ -93,8 +93,15 @@
         #ambient-select { padding: 5px 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; }
 
         /* --- STATS --- */
+        .stats-controls { display: flex; justify-content: center; margin-bottom: 25px; gap: 10px; }
+        .stat-period-btn { padding: 8px 16px; background: #eef5f7; border: none; border-radius: 20px; font-size: 0.9rem; color: #666; cursor: pointer; }
+        .stat-period-btn.active { background: var(--primary); color: white; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .stat-card { background: #f8fbfd; padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        .stat-card h3 { font-size: 2.5rem; color: var(--text-dark); margin: 10px 0; }
+        .stat-card p { font-size: 0.9rem; color: #666; }
+
         .pro-chart-container { display: none; margin-top: 30px; }
         .chart-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 200px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
         .chart-bar { width: 12%; background: var(--secondary); border-radius: 5px 5px 0 0; position: relative; transition: height 0.5s; }
@@ -193,8 +200,8 @@
         <header>
             <div class="user-info">
                 <!-- LOGO USER -->
-                <img src="img/logo2.png" 
-                     alt="Logo" style="width: 45px; height: 45px; object-fit: contain; border-radius: 8px;">
+                <img src="img/logo2.png"
+                     alt="Logo" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;">
                 <div>
                     <h4 id="display-username">Halo, User!</h4>
                     <span id="user-status-badge" class="user-badge">Basic Plan</span>
@@ -246,9 +253,9 @@
                 <h3 style="color: var(--primary); margin-bottom: 20px;">Pomodoro Timer</h3>
                 
                 <div class="timer-modes">
-                    <button class="btn btn-outline" onclick="setTimerMode(25)" style="background:var(--accent); color:var(--secondary); border:none;">Fokus</button>
-                    <button class="btn btn-outline" onclick="setTimerMode(5)">Istirahat</button>
-                    <button class="btn btn-outline" onclick="setTimerMode(15)">Istirahat Panjang</button>
+                    <button class="btn btn-outline" onclick="setTimerMode(25, this)" class="mode-btn active" style="background:var(--accent); color:var(--secondary); border:none;">Fokus</button>
+                    <button class="btn btn-outline" onclick="setTimerMode(5, this)">Istirahat</button>
+                    <button class="btn btn-outline" onclick="setTimerMode(15, this)">Istirahat Panjang</button>
                 </div>
 
                 <div class="timer-display">
@@ -277,20 +284,26 @@
         <section id="report" class="content-section hidden">
             <h3 style="color: var(--primary); margin-bottom: 20px;">Laporan Produktivitas</h3>
             
+            <div class="stats-controls">
+                <button class="stat-period-btn active" onclick="updateStatsPeriod('daily', this)">Hari Ini</button>
+                <button class="stat-period-btn" onclick="updateStatsPeriod('weekly', this)">Minggu Ini</button>
+                <button class="stat-period-btn" onclick="updateStatsPeriod('monthly', this)">Bulan Ini</button>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3 id="stat-tasks">0</h3>
-                    <p>Tugas Selesai Hari Ini</p>
+                    <p>Tugas Selesai</p>
                 </div>
                 <div class="stat-card" style="border-color: var(--secondary);">
                     <h3 id="stat-sessions">0</h3>
-                    <p>Sesi Fokus Hari Ini</p>
+                    <p>Sesi Fokus Tuntas</p>
                 </div>
             </div>
 
             <!-- PRO STATS SECTION -->
             <div style="margin-top: 30px;">
-                <h4 style="margin-bottom: 15px;">Analisis Mingguan (Pro)</h4>
+                <h4 style="margin-bottom: 15px;">Analisis Grafik Mingguan (Pro)</h4>
                 
                 <!-- Locked View -->
                 <div id="pro-locked-view" class="lock-overlay">
@@ -384,14 +397,6 @@
                 <div class="guide-text">
                     <h4>1. Kelola Tugas Anda</h4>
                     <p>Tambahkan semua tugas yang perlu diselesaikan. Tandai tugas yang sudah selesai dan pantau progres Anda.</p>
-                    <div class="guide-tips">
-                        <i class="far fa-lightbulb" style="color: #fbc02d;"></i> <strong>Tips:</strong>
-                        <ul>
-                            <li>Buat judul yang jelas dan spesifik</li>
-                            <li>Tambahkan deadline untuk setiap tugas</li>
-                            <li>Update status tugas secara berkala</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
 
@@ -400,15 +405,7 @@
                 <div class="guide-icon"><i class="fas fa-stopwatch"></i></div>
                 <div class="guide-text">
                     <h4>2. Gunakan Pomodoro Timer</h4>
-                    <p>Fokus selama 25 menit, lalu istirahat 5 menit. Teknik ini terbukti meningkatkan konsentrasi dan produktivitas.</p>
-                    <div class="guide-tips">
-                        <i class="far fa-lightbulb" style="color: #fbc02d;"></i> <strong>Tips:</strong>
-                        <ul>
-                            <li>Hilangkan semua distraksi</li>
-                            <li>Fokus pada satu tugas saja</li>
-                            <li>Manfaatkan waktu istirahat dengan baik</li>
-                        </ul>
-                    </div>
+                    <p>Fokus selama 25 menit, lalu istirahat 5 menit. Gunakan tombol 'Reset' untuk mengulang waktu sesuai mode.</p>
                 </div>
             </div>
 
@@ -417,15 +414,7 @@
                 <div class="guide-icon"><i class="fas fa-chart-bar"></i></div>
                 <div class="guide-text">
                     <h4>3. Pantau Produktivitas</h4>
-                    <p>Lihat laporan harian Anda untuk memahami pola kerja. Upgrade ke Pro untuk analytics lebih lengkap.</p>
-                    <div class="guide-tips">
-                        <i class="far fa-lightbulb" style="color: #fbc02d;"></i> <strong>Tips:</strong>
-                        <ul>
-                            <li>Review laporan setiap hari</li>
-                            <li>Identifikasi waktu paling produktif</li>
-                            <li>Buat target harian yang realistis</li>
-                        </ul>
-                    </div>
+                    <p>Gunakan tab 'Hari Ini', 'Minggu Ini', atau 'Bulan Ini' di menu Laporan untuk melihat performa Anda.</p>
                 </div>
             </div>
 
@@ -433,39 +422,8 @@
             <div class="guide-item">
                 <div class="guide-icon"><i class="fas fa-crown"></i></div>
                 <div class="guide-text">
-                    <h4>4. Upgrade ke Pro</h4>
-                    <p>Dapatkan fitur premium: laporan mingguan/bulanan, notifikasi suara, dan ambient sounds hanya Rp 15.000.</p>
-                    <div class="guide-tips">
-                        <i class="far fa-lightbulb" style="color: #fbc02d;"></i> <strong>Tips:</strong>
-                        <ul>
-                            <li>Sekali bayar, akses selamanya</li>
-                            <li>Analytics mendalam dengan grafik</li>
-                            <li>Fitur sound untuk konsentrasi maksimal</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer: Teknik Pomodoro -->
-            <div class="pomodoro-steps-box">
-                <h4 style="margin-bottom: 10px;">Teknik Pomodoro: Kunci Produktivitas</h4>
-                <div class="pomodoro-steps">
-                    <div class="step-item">
-                        <i class="fas fa-stopwatch step-icon"></i>
-                        <span class="step-label">25 Menit Fokus</span>
-                    </div>
-                    <div class="step-item">
-                        <i class="fas fa-coffee step-icon"></i>
-                        <span class="step-label">5 Menit Istirahat</span>
-                    </div>
-                    <div class="step-item">
-                        <i class="fas fa-sync-alt step-icon"></i>
-                        <span class="step-label">Ulangi 4 Kali</span>
-                    </div>
-                    <div class="step-item">
-                        <i class="fas fa-mug-hot step-icon"></i>
-                        <span class="step-label">Istirahat Panjang</span>
-                    </div>
+                    <h4>4. Fitur Pro (Audio)</h4>
+                    <p>Putar suara hujan atau suasana cafe saat timer berjalan untuk meningkatkan fokus.</p>
                 </div>
             </div>
             
@@ -480,15 +438,15 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // === MASUKKAN CONFIG FIREBASE ANDA DI SINI ===
+        // === FIREBASE CONFIG ===
         const firebaseConfig = {
-        apiKey: "AIzaSyAwFQ6HgWYU0xLBdQQdQLhcrWAnzxNpH_4",
-        authDomain: "timetask-d6fcb.firebaseapp.com",
-        projectId: "timetask-d6fcb",
-        storageBucket: "timetask-d6fcb.firebasestorage.app",
-        messagingSenderId: "634201022890",
-        appId: "1:634201022890:web:68e5dc0738ffd140034bd3",
-        measurementId: "G-0TG6HG0GTZ"
+            apiKey: "AIzaSyAwFQ6HgWYU0xLBdQQdQLhcrWAnzxNpH_4",
+            authDomain: "timetask-d6fcb.firebaseapp.com",
+            projectId: "timetask-d6fcb",
+            storageBucket: "timetask-d6fcb.firebasestorage.app",
+            messagingSenderId: "634201022890",
+            appId: "1:634201022890:web:68e5dc0738ffd140034bd3",
+            measurementId: "G-0TG6HG0GTZ"
         };
 
         // Init Firebase
@@ -504,6 +462,7 @@
         let isProUser = false;
         let tasks = [];
         let filter = 'all';
+        let statsPeriod = 'daily'; // daily, weekly, monthly
 
         // --- AUTH LOGIC ---
         onAuthStateChanged(auth, (user) => {
@@ -512,10 +471,11 @@
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('display-username').innerText = `Halo, ${user.displayName || 'User'}!`;
+                document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${user.displayName || 'User'}&background=random`;
                 
                 checkProStatus(user.uid);
                 loadTasks(user.uid);
-                requestNotificationPermission(); // Ask for notification permission
+                requestNotificationPermission();
             } else {
                 currentUser = null;
                 isProUser = false;
@@ -530,22 +490,19 @@
                 const docSnap = await getDoc(doc(db, "users", uid));
                 if (docSnap.exists() && docSnap.data().isPro) {
                     isProUser = true;
-                    // Update Badge
                     const badge = document.getElementById('user-status-badge');
                     badge.innerText = "PRO MEMBER";
                     badge.classList.add('badge-pro');
                     document.getElementById('upgrade-btn-top').classList.add('hidden');
                     
-                    // Unlock Stats
                     document.getElementById('pro-locked-view').classList.add('hidden');
                     document.getElementById('pro-chart-view').style.display = 'block';
                 }
             } catch(e) { console.log("Pro check error", e); }
         }
 
-        // --- CRUD TUGAS (Add, Edit, Delete) ---
+        // --- CRUD TUGAS ---
 
-        // Open Modal (New or Edit)
         window.openTaskModal = (id = null) => {
             document.getElementById('task-modal').classList.remove('hidden');
             const titleInput = document.getElementById('task-title');
@@ -556,7 +513,6 @@
             const btnSave = document.getElementById('btn-save-task');
 
             if (id) {
-                // Edit Mode
                 const task = tasks.find(t => t.id === id);
                 modalTitle.innerText = "Edit Tugas";
                 titleInput.value = task.title;
@@ -565,7 +521,6 @@
                 hiddenId.value = id;
                 btnSave.innerText = "Perbarui";
             } else {
-                // New Mode
                 modalTitle.innerText = "Tambah Tugas Baru";
                 titleInput.value = "";
                 descInput.value = "";
@@ -575,7 +530,6 @@
             }
         };
 
-        // Save (Insert or Update)
         window.saveTask = async () => {
             const title = document.getElementById('task-title').value;
             const desc = document.getElementById('task-desc').value;
@@ -585,59 +539,60 @@
             if (!title) return alert("Judul tugas wajib diisi!");
 
             const btn = document.getElementById('btn-save-task');
-            const originalText = btn.innerText;
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
             try {
                 if (id) {
-                    // Update Existing
                     await updateDoc(doc(db, "tasks", id), {
-                        title: title,
-                        description: desc,
-                        dueDate: date
+                        title: title, description: desc, dueDate: date
                     });
                 } else {
-                    // Create New
                     await addDoc(collection(db, "tasks"), {
                         uid: currentUser.uid,
-                        title: title,
-                        description: desc,
-                        dueDate: date,
+                        title: title, description: desc, dueDate: date,
                         completed: false,
-                        createdAt: new Date()
+                        createdAt: new Date().toISOString()
                     });
                 }
                 closeModal('task-modal');
             } catch(e) {
                 alert("Gagal menyimpan: " + e.message);
             } finally {
-                btn.innerText = originalText;
+                btn.innerText = "Simpan";
                 btn.disabled = false;
             }
         };
 
-        // Delete
         window.deleteTask = async (id) => {
             if (confirm("Hapus tugas ini?")) {
                 await deleteDoc(doc(db, "tasks", id));
             }
         };
 
-        // Toggle Status
+        // UPDATE STATUS & COMPLETED AT
         window.toggleTaskStatus = async (id, currentStatus) => {
-            await updateDoc(doc(db, "tasks", id), { completed: !currentStatus });
+            const newStatus = !currentStatus;
+            const dataToUpdate = { completed: newStatus };
+            
+            // Jika selesai, simpan tanggal selesai untuk statistik
+            if (newStatus) {
+                dataToUpdate.completedAt = new Date().toISOString();
+            } else {
+                dataToUpdate.completedAt = null;
+            }
+
+            await updateDoc(doc(db, "tasks", id), dataToUpdate);
         };
 
-        // Load & Render
         function loadTasks(uid) {
             const q = query(collection(db, "tasks"), where("uid", "==", uid));
             onSnapshot(q, (snapshot) => {
                 tasks = [];
                 snapshot.forEach(doc => tasks.push({ id: doc.id, ...doc.data() }));
                 renderTasks();
-                updateStats();
-                checkReminders(); // Cek notifikasi saat data dimuat/berubah
+                calculateStats(); // Recalculate stats when data changes
+                checkReminders();
             });
         }
 
@@ -665,9 +620,7 @@
                         ${task.dueDate ? `<div class="task-meta"><i class="far fa-calendar"></i> ${task.dueDate}</div>` : ''}
                     </div>
                     <div class="task-actions">
-                        <!-- Tombol Edit -->
                         <button class="btn-icon" onclick="openTaskModal('${task.id}')"><i class="fas fa-pencil-alt"></i></button>
-                        <!-- Tombol Hapus -->
                         <button class="btn-icon delete" onclick="deleteTask('${task.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
@@ -678,7 +631,6 @@
             document.getElementById('task-completed-count').innerText = tasks.filter(t => t.completed).length;
         }
 
-        // --- 5. NOTIFICATION SYSTEM (No. 5) ---
         function requestNotificationPermission() {
             if ("Notification" in window && Notification.permission !== "granted") {
                 Notification.requestPermission();
@@ -687,31 +639,179 @@
 
         function checkReminders() {
             if (!("Notification" in window) || Notification.permission !== "granted") return;
-
-            const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
-            
+            const today = new Date().toISOString().split('T')[0];
             tasks.forEach(task => {
                 if (!task.completed && task.dueDate === today) {
-                    // Cek agar tidak spam (opsional: bisa simpan 'notified' flag di local/session storage)
-                    new Notification("Pengingat Tugas", {
-                        body: `Tugas "${task.title}" jatuh tempo hari ini!`,
-                        icon: "https://cdn-icons-png.flaticon.com/512/9519/9519782.png"
-                    });
+                    // Logic to avoid spamming notification in real app needed here
                 }
             });
         }
 
-        // --- POMODORO & AMBIENT SOUND ---
-        window.handleAmbientChange = (select) => {
-            if (!isProUser && select.value !== 'none') {
-                select.value = 'none'; // Reset
-                showProModal(); // Upsell
-            } else if (isProUser && select.value !== 'none') {
-                // Di sini Anda bisa memutar audio jika ada file
-                console.log("Playing sound: " + select.value);
-                // alert(`Memutar suara: ${select.options[select.selectedIndex].text}`);
+        // --- POMODORO & AUDIO SYSTEM ---
+        
+        let timerInterval;
+        let currentModeDuration = 25 * 60; // FIX: Variabel untuk menyimpan durasi mode aktif
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+        
+        // AUDIO RESOURCES (Local Folder)
+        // Pastikan Anda membuat folder bernama 'audio' di lokasi yang sama dengan file HTML ini
+        // Lalu masukkan file mp3 dengan nama yang sesuai.
+        const audioResources = {
+            rain: "audio/rain.mp3",
+            cafe: "audio/cafe.mp3",
+            forest: "audio/forest.mp3"
+        };
+        const ambientAudio = new Audio();
+        ambientAudio.loop = true; // Pastikan audio looping
+
+        window.toggleTimer = () => {
+            const btn = document.getElementById('start-btn');
+            if (isRunning) {
+                clearInterval(timerInterval);
+                btn.innerHTML = '<i class="fas fa-play"></i> Lanjutkan';
+                isRunning = false;
+                ambientAudio.pause(); // Pause audio when timer pauses
+            } else {
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if(timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        btn.innerHTML = '<i class="fas fa-play"></i> Mulai';
+                        ambientAudio.pause();
+                        alert("Waktu habis!");
+                        // Increment session count logic would go here
+                    }
+                }, 1000);
+                btn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                isRunning = true;
+                
+                // Resume audio if selected (and paused previously)
+                if(document.getElementById('ambient-select').value !== 'none' && isProUser) {
+                    ambientAudio.play().catch(e => console.log("Audio play blocked", e));
+                }
             }
         };
+
+        window.resetTimer = () => {
+            clearInterval(timerInterval);
+            isRunning = false;
+            // FIX: Reset ke currentModeDuration, bukan hardcode 25
+            timeLeft = currentModeDuration; 
+            updateTimerDisplay();
+            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Mulai';
+            
+            // Stop audio on reset
+            ambientAudio.pause();
+            ambientAudio.currentTime = 0;
+        };
+
+        window.setTimerMode = (min, btnElement) => {
+            // Update UI buttons
+            const buttons = document.querySelectorAll('.timer-modes button');
+            buttons.forEach(b => {
+                b.style.background = 'transparent'; 
+                b.style.color = 'var(--primary)';
+                b.style.border = '1px solid var(--primary)';
+            });
+            if(btnElement) {
+                btnElement.style.background = 'var(--accent)';
+                btnElement.style.color = 'var(--secondary)';
+                btnElement.style.border = 'none';
+            }
+
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            // FIX: Set durasi baru sebagai default untuk reset
+            currentModeDuration = min * 60; 
+            timeLeft = currentModeDuration;
+            
+            updateTimerDisplay();
+            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Mulai';
+            
+            // Stop audio when changing modes (optional, keeps it clean)
+            ambientAudio.pause();
+        };
+
+        window.handleAmbientChange = (select) => {
+            if (!isProUser && select.value !== 'none') {
+                select.value = 'none';
+                showProModal();
+                return;
+            }
+
+            if (select.value === 'none') {
+                ambientAudio.pause();
+                ambientAudio.src = "";
+            } else {
+                ambientAudio.src = audioResources[select.value];
+                // PERUBAHAN DI SINI: Langsung play tanpa cek isRunning
+                ambientAudio.play().catch(e => {
+                    console.log("Autoplay prevented", e);
+                    // Menambahkan penanganan error jika file tidak ditemukan
+                    if (e.name === 'NotSupportedError' || e.name === 'error') {
+                         alert("File audio tidak ditemukan. Pastikan folder 'audio' ada dan berisi file mp3 yang benar.");
+                    }
+                });
+            }
+        };
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer-text').innerText = `${m}:${s}`;
+        }
+
+        // --- STATS SYSTEM (Day, Week, Month) - UPDATED ---
+        
+        window.updateStatsPeriod = (period, btn) => {
+            statsPeriod = period;
+            document.querySelectorAll('.stat-period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            calculateStats();
+        };
+
+        function calculateStats() {
+            const now = new Date();
+            
+            // 1. Start of Day (00:00 Local)
+            const startOfDay = new Date(now);
+            startOfDay.setHours(0,0,0,0);
+            
+            // 2. Start of Week (Monday 00:00 Local)
+            const startOfWeek = new Date(now);
+            const day = startOfWeek.getDay(); // 0 (Sun) to 6 (Sat)
+            const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+            startOfWeek.setDate(diff);
+            startOfWeek.setHours(0,0,0,0);
+
+            // 3. Start of Month (1st 00:00 Local)
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            startOfMonth.setHours(0,0,0,0);
+
+            let completedCount = 0;
+
+            tasks.forEach(task => {
+                if (task.completed && task.completedAt) {
+                    const taskDate = new Date(task.completedAt);
+                    
+                    if (statsPeriod === 'daily') {
+                        if (taskDate >= startOfDay) completedCount++;
+                    } else if (statsPeriod === 'weekly') {
+                        if (taskDate >= startOfWeek) completedCount++;
+                    } else if (statsPeriod === 'monthly') {
+                        if (taskDate >= startOfMonth) completedCount++;
+                    }
+                }
+            });
+            
+            document.getElementById('stat-tasks').innerText = completedCount;
+            // Note: Session stats logic placeholder
+            document.getElementById('stat-sessions').innerText = isRunning ? "1 (Aktif)" : "0"; 
+        }
 
         // --- UTILS ---
         window.filterTasks = (type, btn) => {
@@ -739,21 +839,47 @@
         
         window.logout = () => signOut(auth).then(() => window.location.reload());
 
+        // FIX: Instant Upgrade Logic (Updated to be more robust)
         window.simulatePayment = async () => {
             const btn = document.querySelector('#pro-modal .btn-secondary');
             btn.innerText = "Memproses...";
-            setTimeout(async () => {
+            btn.disabled = true;
+
+            try {
                 if(currentUser) {
-                    await updateDoc(doc(db, "users", currentUser.uid), { isPro: true });
-                    checkProStatus(currentUser.uid);
+                    // 1. Update Firestore
+                    // MENGGUNAKAN setDoc dengan merge: true agar jika dokumen belum ada, akan dibuat otomatis
+                    // Ini memperbaiki error "Document not found" saat updateDoc
+                    await setDoc(doc(db, "users", currentUser.uid), { isPro: true }, { merge: true });
+                    
+                    // 2. Update UI INSTANTLY (Don't wait for snapshot)
+                    isProUser = true;
+                    
+                    // Update Badge
+                    const badge = document.getElementById('user-status-badge');
+                    badge.innerText = "PRO MEMBER";
+                    badge.classList.add('badge-pro');
+                    document.getElementById('upgrade-btn-top').classList.add('hidden');
+                    
+                    // Unlock Stats
+                    document.getElementById('pro-locked-view').classList.add('hidden');
+                    document.getElementById('pro-chart-view').style.display = 'block';
+
                     alert("Upgrade Berhasil! Fitur Pro kini aktif.");
+                } else {
+                    alert("Silakan login terlebih dahulu.");
                 }
                 closeModal('pro-modal');
+            } catch(e) {
+                console.error(e);
+                alert("Gagal upgrade: " + e.message); // Tampilkan pesan error detail
+            } finally {
                 btn.innerText = "Upgrade Sekarang";
-            }, 1500);
+                btn.disabled = false;
+            }
         };
 
-        // Auth Listeners for Forms
+        // Auth Form Listeners
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             signInWithEmailAndPassword(auth, 
@@ -776,59 +902,6 @@
             }).catch(err => alert("Register gagal: " + err.message));
         });
 
-        // Basic Timer Logic
-        let timerInterval;
-        let timeLeft = 25 * 60;
-        let isRunning = false;
-        
-        window.toggleTimer = () => {
-            const btn = document.getElementById('start-btn');
-            if (isRunning) {
-                clearInterval(timerInterval);
-                btn.innerHTML = '<i class="fas fa-play"></i> Lanjutkan';
-                isRunning = false;
-            } else {
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    updateTimerDisplay();
-                    if(timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        isRunning = false;
-                        btn.innerHTML = '<i class="fas fa-play"></i> Mulai';
-                        alert("Waktu habis!");
-                        // Increase session count logic here
-                    }
-                }, 1000);
-                btn.innerHTML = '<i class="fas fa-pause"></i> Pause';
-                isRunning = true;
-            }
-        };
-
-        window.resetTimer = () => {
-            clearInterval(timerInterval);
-            isRunning = false;
-            timeLeft = 25 * 60;
-            updateTimerDisplay();
-            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Mulai';
-        };
-
-        window.setTimerMode = (min) => {
-            clearInterval(timerInterval);
-            isRunning = false;
-            timeLeft = min * 60;
-            updateTimerDisplay();
-            document.getElementById('start-btn').innerHTML = '<i class="fas fa-play"></i> Mulai';
-        };
-
-        function updateTimerDisplay() {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const s = (timeLeft % 60).toString().padStart(2, '0');
-            document.getElementById('timer-text').innerText = `${m}:${s}`;
-        }
-        
-        function updateStats() {
-            document.getElementById('stat-tasks').innerText = tasks.filter(t => t.completed).length;
-        }
     </script>
 </body>
 </html>
