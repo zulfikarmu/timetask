@@ -199,7 +199,8 @@
         <!-- Header -->
         <header>
             <div class="user-info">
-                <!-- LOGO USER -->
+                <!-- LOGO USER (FIXED US LOGO) -->
+                <!-- PERUBAHAN: Logo 'US' tetap (Fixed) dengan warna pink/merah -->
                 <img src="img/logo2.png" id="user-avatar"
                      alt="Logo" style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px;">
                 <div>
@@ -471,7 +472,9 @@
                 document.getElementById('auth-container').classList.add('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 document.getElementById('display-username').innerText = `Halo, ${user.displayName || 'User'}!`;
-                document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${user.displayName || 'User'}&background=random`;
+                
+                // PERUBAHAN: Menghapus baris yang mengubah avatar secara dinamis
+                // document.getElementById('user-avatar').src = ...; (DIHAPUS AGAR LOGO TETAP FIXED)
                 
                 checkProStatus(user.uid);
                 loadTasks(user.uid);
@@ -512,24 +515,28 @@
             const modalTitle = document.getElementById('modal-title');
             const btnSave = document.getElementById('btn-save-task');
 
-            if (id) {
-                const task = tasks.find(t => t.id === id);
-                modalTitle.innerText = "Edit Tugas";
-                titleInput.value = task.title;
-                descInput.value = task.description || "";
-                dateInput.value = task.dueDate || "";
-                hiddenId.value = id;
-                btnSave.innerText = "Perbarui";
-            } else {
-                modalTitle.innerText = "Tambah Tugas Baru";
+            // Reset value jika ID null (mode tambah baru)
+            if (!id) {
+                hiddenId.value = ""; // Pastikan ID kosong
                 titleInput.value = "";
                 descInput.value = "";
                 dateInput.value = "";
-                hiddenId.value = "";
+                modalTitle.innerText = "Tambah Tugas Baru";
                 btnSave.innerText = "Simpan";
+            } else {
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    modalTitle.innerText = "Edit Tugas";
+                    titleInput.value = task.title;
+                    descInput.value = task.description || "";
+                    dateInput.value = task.dueDate || "";
+                    hiddenId.value = id;
+                    btnSave.innerText = "Perbarui";
+                }
             }
         };
 
+        // PERBAIKAN: Fungsi saveTask yang lebih aman (Robust)
         window.saveTask = async () => {
             const title = document.getElementById('task-title').value;
             const desc = document.getElementById('task-desc').value;
@@ -537,29 +544,43 @@
             const id = document.getElementById('task-id').value;
 
             if (!title) return alert("Judul tugas wajib diisi!");
+            if (!currentUser) return alert("Sesi habis. Silakan login ulang.");
 
             const btn = document.getElementById('btn-save-task');
+            const originalText = btn.innerText;
             btn.innerText = "Menyimpan...";
             btn.disabled = true;
 
             try {
                 if (id) {
+                    // MODE EDIT
                     await updateDoc(doc(db, "tasks", id), {
-                        title: title, description: desc, dueDate: date
+                        title: title,
+                        description: desc,
+                        dueDate: date
                     });
                 } else {
+                    // MODE TAMBAH BARU
                     await addDoc(collection(db, "tasks"), {
                         uid: currentUser.uid,
-                        title: title, description: desc, dueDate: date,
+                        title: title,
+                        description: desc,
+                        dueDate: date,
                         completed: false,
                         createdAt: new Date().toISOString()
                     });
                 }
                 closeModal('task-modal');
             } catch(e) {
-                alert("Gagal menyimpan: " + e.message);
+                console.error("Error saving task:", e);
+                // Menangani error umum permissions
+                if (e.code === 'permission-denied') {
+                    alert("Gagal menyimpan: Izin ditolak. Silakan cek koneksi atau login ulang.");
+                } else {
+                    alert("Gagal menyimpan: " + e.message);
+                }
             } finally {
-                btn.innerText = "Simpan";
+                btn.innerText = originalText;
                 btn.disabled = false;
             }
         };
@@ -655,8 +676,6 @@
         let isRunning = false;
         
         // AUDIO RESOURCES (Local Folder)
-        // Pastikan Anda membuat folder bernama 'audio' di lokasi yang sama dengan file HTML ini
-        // Lalu masukkan file mp3 dengan nama yang sesuai.
         const audioResources = {
             rain: "audio/rain.mp3",
             cafe: "audio/cafe.mp3",
@@ -905,4 +924,3 @@
     </script>
 </body>
 </html>
-
